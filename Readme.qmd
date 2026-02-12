@@ -1,0 +1,207 @@
+---
+title: "Drought Matrices"
+author: "TJ"
+format:
+  pdf:
+    pdf-engine: pdflatex
+    documentclass: article
+editor: visual
+---
+
+
+
+
+
+## Why GWSC need drought matrices
+
+
+**GWSC typically encounters questions such as:**
+
+1. How is precipitation during traditionally wet years expected to change in the future, and what are the potential impacts?
+
+2. What do recent rainfall declines imply for agricultural vulnerability and resilience?
+
+
+**To answer them, we typically use scientifically grounded and technical metrics such as:**
+
+- Consecutive Dry Days (CDD)
+- Consecutive Dry Months
+
+
+::: {.columns}
+
+::: {.column width="50%"}
+![](Figures/SS1.png){width=70%}
+:::
+
+::: {.column width="50%"}
+![](Figures/SS2.png){width=70%}
+:::
+
+:::
+
+**We are looking for drought metrics to answer**
+
+- Frequency of drought events: How often droughts occur relative to a baseline period
+- Duration of drought: How long a drought persists
+- Intensity of drought: The magnitude or severity of drought conditions
+
+
+**Why existing drought metrics are not aligning with GWSC's needs?**
+
+
+
+**Four interconnected types**
+
+- Meteorological - prolonged deficits in precipitation\
+          ↓
+- Hydrological - reduced surface and groundwater availability\
+          ↓
+- Agricultural - soil moisture deficits affecting crop growth\
+          ↓
+- Socioeconomic - broader disruptions in water‐dependent social and economic systems
+
+
+
+**Existing meteorological drought indices**
+
+
+![](Figures/SS3.png){width=100%}
+
+
+**Most Common Indices**
+
+
+1. Standardized Precipitation Index (SPI)
+
+Strengths:
+
+- Most widely used globally
+- Simple - only requires precipitation data
+- Can be calculated for multiple timescales (1, 3, 6, 12, 24 months)
+- Standardized, so comparable across regions and climates
+
+Formula: Normalizes precipitation using gamma distribution
+
+
+2. Standardized Precipitation Evapotranspiration Index (SPEI)
+Strengths:
+
+ - Includes temperature effects (evapotranspiration) - interesting but at GWSC's scale of assesmsnt how we canensure we caluclate accutate ET (adding another uncertanity)
+ - More sensitive to climate change than SPI
+ - Better for agricultural and hydrological applications
+ - Same interpretation as SPI
+
+Formula: Uses climatic water balance (P - PET)
+
+
+3. Palmer Drought Severity Index (PDSI)
+Strengths:
+
+Comprehensive - uses precipitation, temperature, soil moisture - again it would challenging or adding more uncertainty at the scale GWSC 
+Self-calibrating version (sc-PDSI) works across different climates
+
+
+Weaknesses:
+
+Complex calculation
+Fixed timescale (not flexible like SPI) - this is another reson that it wont allign with GWSC's need
+
+
+**Decisions process**
+
+We are likely looking for a meteorological index. It appears that something similar to the Standardized Precipitation Index (SPI) may be appropriate. To understand the limitations of SPI and align it with GWSC’s needs, we first examine how standard SPI values are calculated and then consider what modifications or extensions may be required.
+
+
+
+**SPI Calculation Process**
+
+
+**Step 1: Collect Precipitation Data**
+
+We need at least 30 years of monthly precipitation data for the location.
+
+
+
+**Step 2: Choose Time Scale**
+
+Decide the accumulation period (1, 3, 6, 12, or 24 months). 
+
+For example:
+
+SPI-3: Sum precipitation over 3-month periods
+SPI-6: Sum precipitation over 6-month periods
+
+
+**Step 3: Aggregate Precipitation**
+
+For each month, sum the precipitation over your chosen time scale.
+Example for SPI-3 at March 2026:
+
+Sum = Jan 2026 + Feb 2026 + Mar 2026
+
+
+**Step 4: Fit Probability Distribution**
+
+Fit the aggregated precipitation data to a Gamma distribution (most common) or other distribution.
+The Gamma distribution is defined by two parameters:
+
+
+
+**Step 5: Calculate Cumulative Probability**
+
+Transform the gamma distribution to cumulative probability.
+
+This gives you the probability of getting precipitation  x.
+
+
+**Step 6: Transform to Standard Normal Distribution**
+
+Convert the cumulative probability to standard normal distribution (mean=0, std=1):
+
+
+```{r}
+
+# Load library
+library(SPEI)
+
+# Create sample data (30 years monthly)
+set.seed(123)
+n_years <- 30
+n_months <- n_years * 12
+
+precip <- rgamma(n_months, shape = 2.5, scale = 20)
+
+# Create time series
+precip_ts <- ts(precip, start = c(1990, 1), frequency = 12)
+
+# Calculate SPI-3
+spi_result <- spi(precip_ts, scale = 3, na.rm = TRUE)
+
+# View structure
+print(class(spi_result))
+print(names(spi_result))
+
+# Try plotting
+plot(spi_result, main = "SPI-3")
+
+```
+
+
+
+
+
+
+**Notes to later use**
+
+Limitation with relying on Precipitation - flash drought - levatedtemperatures and heightened evaporative demand
+
+drought is not solely a result of natural variability but also a product of human decisions and actions - i.e.  The increasing demand for water due to population growth, urbanization,and agricultural expansion has heightened the risk of water scarcity, even in regions not traditionally prone to drought
+
+
+More earliest definition of drought:
+
+- 21‐day period with total rainfall less than 30% of the regionalaverage, relying solely on precipitation thresholds to characterize prolonged drynes
+
+
+
